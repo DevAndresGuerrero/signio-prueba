@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\User;
+use App\Event\UserCreated;
+use App\Event\UserCreatedByAdmin;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\UserCollection;
@@ -16,7 +18,7 @@ class UserController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index() {
-        return UserCollection::make(User::all());
+        return UserCollection::make(User::with('category')->get());
     }
 
     /**
@@ -26,8 +28,18 @@ class UserController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(StoreUserRequest $request) {
-        $user = User::create($request->validated());
+        try {
+            $user = User::create($request->validated());
 
+            event(new UserCreated($user));
+		    event(new UserCreatedByAdmin($user));
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ]);
+        }
+        
         return UserResource::make($user);
     }
 
@@ -38,6 +50,7 @@ class UserController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function show(User $user) {
+        $user->load('category');
         return UserResource::make($user);
     }
 
@@ -49,6 +62,14 @@ class UserController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(UpdateUserRequest $request, User $user) {
+        try {
+            $user->fill($request->validated())->save();
+            return UserResource::make($user);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -58,5 +79,10 @@ class UserController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy(User $user) {
+        $user->delete();
+
+        return response()->json([
+            'message' => 'Usuario eliminado exitosamente!',
+        ]);
     }
 }

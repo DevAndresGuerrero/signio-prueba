@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Country;
 use Illuminate\Validation\Rules;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -22,14 +23,15 @@ class StoreUserRequest extends FormRequest {
      */
     public function rules() {
         return [
-            'name'     => ['required', 'string', 'min:5', 'max:100'],
-            'lastname' => ['required', 'string', 'min:5', 'max:100'],
-            'dni'      => ['required', 'string', 'unique:users'],
-            'email'    => ['required', 'string', 'email', 'max:150', 'unique:users'],
-            'country'  => ['required', 'string'],
-            'address'  => ['required', 'string', 'max:180'],
-            'phone'    => ['required', 'string', 'max:10'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'name'           => ['required', 'string', 'min:5', 'max:100'],
+            'lastname'       => ['required', 'string', 'min:5', 'max:100'],
+            'dni'            => ['required', 'string', 'unique:users'],
+            'email'          => ['required', 'string', 'email', 'max:150', 'unique:users'],
+            'country'        => ['required', new Country()],
+            'address'        => ['required', 'string', 'max:180'],
+            'phone'          => ['required', 'string', 'max:10'],
+            'category_id'    => ['string', 'exists:categories,id'],
+            'password'       => ['required', 'confirmed', Rules\Password::defaults()],
         ];
     }
 }

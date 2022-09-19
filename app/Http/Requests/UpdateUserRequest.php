@@ -2,17 +2,17 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Country;
+use Illuminate\Validation\Rules;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateUserRequest extends FormRequest
-{
+class UpdateUserRequest extends FormRequest {
     /**
      * Determine if the user is authorized to make this request.
      *
      * @return bool
      */
-    public function authorize()
-    {
+    public function authorize() {
         return true;
     }
 
@@ -21,10 +21,17 @@ class UpdateUserRequest extends FormRequest
      *
      * @return array<string, mixed>
      */
-    public function rules()
-    {
+    public function rules() {
         return [
-            //
+            'name'           => ['required', 'string', 'min:5', 'max:100'],
+            'lastname'       => ['required', 'string', 'min:5', 'max:100'],
+            'dni'            => ['required', 'string', 'unique:users,id,' . $this->user->id],
+            'email'          => ['required', 'string', 'email', 'max:150', 'unique:users,id,' . $this->user->id],
+            'country'        => ['required', new Country()],
+            'address'        => ['required', 'string', 'max:180'],
+            'phone'          => ['required', 'string', 'max:10'],
+            'category_id'    => ['string', 'exists:categories,id'],
+            'password'       => ['required', 'confirmed', Rules\Password::defaults()],
         ];
     }
 }

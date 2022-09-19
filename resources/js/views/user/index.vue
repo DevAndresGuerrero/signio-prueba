@@ -22,6 +22,7 @@
           <table class="table table-sm table-hover">
             <thead class="thead-dark bg-dark text-white">
               <tr>
+                <th>Categoria</th>
                 <th>Nombre(s)</th>
                 <th>Apellido(s)</th>
                 <th>Cedula</th>
@@ -34,6 +35,7 @@
             </thead>
             <tbody>
               <tr v-for="u in filterUsers">
+                <td>{{ u.category?.name ?? 'Por asignar' }}</td>
                 <td>{{ u.name }}</td>
                 <td>{{ u.lastname }}</td>
                 <td>{{ u.dni }}</td>
@@ -41,7 +43,10 @@
                 <td>{{ u.country }}</td>
                 <td>{{ u.address }}</td>
                 <td>{{ u.phone }}</td>
-                <td>Action</td>
+                <td>
+                  <router-link :to="{ name: 'userEdit', params: { userId:u.id }}">Edit</router-link>
+                  <a href="#" class="p-2 text-danger" @click.prevent="deleteUser(u.id)">Delete</a>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -69,9 +74,38 @@
     if (!query.length) return users.value
 
     return users.value.filter(user => {
-      return user.name.toLowerCase().match(query) || user.lastname.toLowerCase().match(query)
+      return user.name.toLowerCase().match(query) || 
+          user.lastname.toLowerCase().match(query) ||
+          user.category?.name.toLowerCase().match(query)
     })
   })
+
+  const deleteUser = (userId) => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios.delete(`https://signio-prueba.test/api/users/${userId}`)
+          .then(()=>{
+            users.value = users.value.filter(user => {
+              return user.id != userId
+            })
+          })
+
+        Swal.fire(
+          'Deleted!',
+          'Your file has been deleted.',
+          'success'
+        )
+      }
+    })
+  }
 
   mixUserArray();
 </script>

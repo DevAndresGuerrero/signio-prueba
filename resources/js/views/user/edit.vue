@@ -3,7 +3,7 @@
     <div class="card col-12 col-md-10 col-lg-8 col-xl-6">
       <div class="card-header">
         <div class="d-flex justify-content-between align-items-baseline">
-          <h2>Crear usuario</h2>
+          <h2>Editar Usuario: {{ user.name }}</h2>
           <router-link class="btn btn-primary" :to="{ name: 'users' }">
             Listados de usuarios
           </router-link>
@@ -157,7 +157,10 @@
 
 <script setup>
   import { ref, reactive } from 'vue'
+  import { useRoute } from 'vue-router';
 
+  const route = useRoute();
+  const user = ref(null)
   const categories = ref([])
   const countries = ref([])
   const success = ref(null)
@@ -172,13 +175,30 @@
     address: null,
     phone: null,
     category_id: null,
+    category: {},
     password: null,
     password_confirmation: null,
   })
 
+  const getUser = async () => {
+    let response = await fetch(`https://signio-prueba.test/api/users/${route.params.userId}`)
+    let {data} = await response.json();
+    user.value = data;
+
+    form.name = user.value.name
+    form.lastname = user.value.lastname
+    form.dni = user.value.dni
+    form.email = user.value.email
+    form.country = user.value.country
+    form.address = user.value.address
+    form.phone = user.value.phone
+    form.category_id = user.value.category_id
+    form.category = user.value.category
+  }
+
   const saveUser = async () => {
-    let response = await fetch('https://signio-prueba.test/api/users', {
-      method: 'POST',
+    let response = await fetch(`https://signio-prueba.test/api/users/${route.params.userId}`, {
+      method: 'PUT',
       headers: {
         "Content-Type" : "application/json",
         "accept" : "application/json"
@@ -195,7 +215,7 @@
       return errors.value = result.errors
     }
 
-    success.value = "Usuario creado exitosamente!"
+    success.value = "Usuario actualizado exitosamente!"
   }
 
   const getCategories = async () => {
@@ -208,10 +228,7 @@
     countries.value = await response.json();
   }
 
-  const onlyNumbers = (event) => {
-    console.log(event);
-  }
-
+  getUser();
   getCategories();
   getCountries();
 </script>
