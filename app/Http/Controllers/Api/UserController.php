@@ -26,7 +26,9 @@ class UserController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(StoreUserRequest $request) {
+        $user = User::create($request->validated());
 
+        return UserResource::make($user);
     }
 
     /**
@@ -47,7 +49,6 @@ class UserController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(UpdateUserRequest $request, User $user) {
-
     }
 
     /**
@@ -57,6 +58,5 @@ class UserController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy(User $user) {
-
     }
 }
